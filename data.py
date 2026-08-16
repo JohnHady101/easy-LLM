@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
 from tokenizer import SimpleTokenizer
 import torch
+import config
 
 class GPTDataset(Dataset):
     def __init__(self, txt: str, tokenizer: SimpleTokenizer, max_length: int, stride: int):
@@ -24,7 +25,17 @@ class GPTDataset(Dataset):
     def __getitem__(self, idx):
         return self.input_ids[idx], self.target_ids[idx]
 
-def create_dataloader(text, tokenizer: SimpleTokenizer, batch_size=4, max_length= 8, stride= 128, shuffle= True, drop_last= True, num_workers= 0) -> DataLoader:
+
+def create_dataloader(
+        text,
+        tokenizer: SimpleTokenizer,
+        batch_size=config.BATCH_SIZE,
+        max_length=config.MAX_LENGTH,
+        stride=config.STRIDE,
+        shuffle=True,
+        drop_last=True,
+        num_workers=0
+) -> DataLoader:
     """
     Creates a DataLoader for the GPTDataset.
     
@@ -47,5 +58,12 @@ def create_dataloader(text, tokenizer: SimpleTokenizer, batch_size=4, max_length
         num_workers=num_workers
     )
     return dataloader
+
+def next_batch(loader: DataLoader):
+    embedding_layer = torch.nn.Embedding(config.VOCAB_SIZE, config.EMBEDDING_DIM)
+
+    return embedding_layer(next(iter(loader))[0]), embedding_layer(next(iter(loader))[1])
+
+
 
 
